@@ -5,6 +5,11 @@
 
   socket.on('downloadFrame', function(frame) {
     console.log(frame);
+    var image = new Image();
+    image.onload = function() {
+        context.drawImage(image, 0, 0);
+    };
+    image.src = frame.data;
   });
 
   var video;
