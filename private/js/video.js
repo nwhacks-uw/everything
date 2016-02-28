@@ -67,7 +67,7 @@
 
   function getJPEG() {
       // Returns JPEG as string
-      return canvas.toDataURL('image/jpeg');
+      return canvas.toDataURL('image/png');
   }
 
   function readFrame() {
@@ -92,7 +92,10 @@
       // ... and check if we have a somewhat green pixel.
       // if (h >= 90 && h <= 160 && s >= 25 && s <= 90 && l >= 20 && l <= 75) {
       if (Math.random() > 0.9) {
-        data[j + 3] = 0;
+        // data[j + 3] = 0;
+        data[j] = (data[j] & (255 - 128)) + (Math.random() > 0.5 ? 128 : 0);
+        data[j+1] = (data[j+1] & (255 - 128)) + (Math.random() > 0.5 ? 128 : 0);
+        data[j+2] = (data[j+2] & (255 - 128)) + (Math.random() > 0.5 ? 128 : 0);
       }
       // }
     }
