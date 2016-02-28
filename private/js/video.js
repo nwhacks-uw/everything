@@ -92,6 +92,8 @@
     return context.getImageData(0, 0, width, height);
   }
 
+  // data - The frame data
+  // message - The message you want to encrypt
   function changeData(data, message) {
     var len = data.length;
     var message = message || '';
