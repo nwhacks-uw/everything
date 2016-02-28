@@ -7,7 +7,11 @@
     console.log(frame);
   });
 
-  var video, width, height, context;
+  var video;
+  var width;
+  var height;
+  var context;
+  var id = 0;
 
   function initialize() {
     // The source video.
@@ -38,6 +42,15 @@
       replaceGreen(frame.data);
       context.putImageData(frame, 0, 0);
     }
+
+    // Send frame to server
+    socket.emit('uploadFrame', {
+      id: id,
+      width: width,
+      height: height,
+      data: frame.data,
+      timestamp: +new Date(),
+    });
 
     // Wait for the next frame.
     requestAnimationFrame(draw);
