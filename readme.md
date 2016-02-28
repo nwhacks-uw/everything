@@ -1,5 +1,7 @@
 # Cryptography hack at nwhacks 2016
 
+http://nwhacks.dev.christopher.su/
+https://nwhacks.herokuapp.com/
 
 ## Web Socket
 
@@ -35,4 +37,19 @@ Frontend:
   data: Number[],
   timestamp: Date,
 }
+```
+
+### How to build frontend
+
+In a new tab run:
+
+```sh
+npm install -g watchify
+npm run watch
+```
+
+### How to run
+
+```sh
+npm start
 ```

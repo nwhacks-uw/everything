@@ -48,7 +48,7 @@
       replaceGreen(frame.data);
       context.putImageData(frame, 0, 0);
     }
-    
+
     var jpeg = getJPEG();
 
     // Send frame to server
@@ -64,7 +64,7 @@
     // Wait for the next frame.
     requestAnimationFrame(draw);
   }
-  
+
   function getJPEG() {
       // Returns JPEG as string
       return canvas.toDataURL('image/jpeg');
