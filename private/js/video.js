@@ -11,6 +11,7 @@
   var width;
   var height;
   var context;
+  var contextOther;
   var canvas;
   var id = 0;
   var messageQueue = [];
@@ -28,8 +29,9 @@
     height = video.height;
 
     // The target canvas.
-    canvas = doc.getElementById("c");
+    canvas = doc.getElementById("cme");
     context = canvas.getContext("2d");
+    contextOther = doc.getElementById('cother').getContext('2d');
 
     // Get the webcam's stream.
     nav.getUserMedia({video: true}, startStream, function () {});
@@ -152,7 +154,7 @@
     } else {
       var image = new Image();
       image.onload = function() {
-        context.drawImage(image, 0, 0);
+        contextOther.drawImage(image, 0, 0);
       };
       image.src = frame.data;
     }
