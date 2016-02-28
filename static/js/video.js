@@ -1,7 +1,7 @@
 (function (doc, nav) {
   "use strict";
 
-  var socket = io('http://nwhacks.dev.christopher.su/');
+  var socket = io();
 
   socket.on('downloadFrame', function(frame) {
     console.log(frame);
