@@ -9,12 +9,13 @@ var width;
 var height;
 var uploadedMessage = '';
 var id = 0;
-var frameRate = 2;
+var frameRate = 1;
 var messageQueue = [];
 var bitPadding = 8;
-var numLSBs = 2;
+var numLSBs = 4;
 var START_TRANSMISSION = '>>>>';
 var END_TRANSMISSION = '<<<<';
+var dontUsePng = false;
 
 // On message sent
 document.getElementById("send").onclick = function() {
@@ -59,7 +60,14 @@ function draw() {
     context1.putImageData(frame, 0, 0);
   }
 
-  var imageData = getImageData();
+  function toArray(arr) {
+    var a = [];
+    for (var i = 0; i < arr.length; ++i) {
+      a[i] = arr[i];
+    }
+    return a;
+  }
+  var imageData = dontUsePng ? toArray(frame.data) : getImageData();
 
   // Send frame to server
   var thisTime = +new Date();
@@ -69,14 +77,25 @@ function draw() {
     if (hasData) {
       console.log('Sending frame with data');
     }
-    socket.emit('uploadFrame', {
+
+    // var image = new Image();
+    // image.onload = function() {
+    //   context2.clearRect(0, 0, width, height);
+    //   context2.drawImage(image, 0, 0);
+    //   var imageData = context2.getImageData(0, 0, width, height);
+    //   console.log(decrypt(imageData.data));
+    // };
+    // image.src = imageData;
+    //
+    var frame = {
       room: room,
       id: id++,
       width: width,
       height: height,
       data: imageData,
       timestamp: +new Date(),
-    });
+    };
+    socket.emit('uploadFrame', frame);
   }
 
   // Wait for the next frame.
@@ -85,7 +104,7 @@ function draw() {
 
 function getImageData() {
   // Returns imageData as string
-  return canvas1.toDataURL('image/png');
+  return canvas1.toDataURL('image/png', 1);
 }
 
 function readFrame() {
@@ -181,14 +200,25 @@ function decrypt(data) {
 
 socket.on('downloadFrame', function(frame) {
   console.log('downloaded frame');
-  var image = new Image();
-  image.onload = function() {
-    context2.drawImage(image, 0, 0);
-  };
-  image.src = frame.data;
-  var message = decrypt(frame.data);
-  console.log('DECRYPTED MESSAGE:');
-  renderTextMessage(message);
+
+  if (dontUsePng) {
+    // console.log(frame.data);
+    var message = decrypt(frame.data);
+    console.log('DECRYPTED MESSAGE:', message);
+    // context1.putImageData(frame.data, 0, 0);
+    renderTextMessage(message);
+  } else {
+    var image = new Image();
+    image.onload = function() {
+      context2.clearRect(0, 0, width, height);
+      context2.drawImage(image, 0, 0);
+      var imageData = context2.getImageData(0, 0, width, height);
+      var message = decrypt(imageData.data);
+      console.log('DECRYPTED MESSAGE:', message);
+      renderTextMessage(message);
+    };
+    image.src = frame.data;
+  }
 });
 
 function renderTextMessage(message) {
