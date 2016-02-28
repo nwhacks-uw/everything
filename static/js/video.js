@@ -11,6 +11,7 @@
   var width;
   var height;
   var context;
+  var canvas;
   var id = 0;
 
   function initialize() {
@@ -20,7 +21,7 @@
     height = video.height;
 
     // The target canvas.
-    var canvas = doc.getElementById("c");
+    canvas = doc.getElementById("c");
     context = canvas.getContext("2d");
 
     // Get the webcam's stream.
@@ -42,6 +43,8 @@
       replaceGreen(frame.data);
       context.putImageData(frame, 0, 0);
     }
+    
+    var jpeg = getJPEG();
 
     // Send frame to server
     console.log('emitting: ' + id);
@@ -49,12 +52,17 @@
       id: id++,
       width: width,
       height: height,
-      // data: frame.data,
+      data: jpeg,
       timestamp: +new Date(),
     });
 
     // Wait for the next frame.
     requestAnimationFrame(draw);
+  }
+  
+  function getJPEG() {
+      // Returns JPEG as string
+      return canvas.toDataURL('image/jpeg');
   }
 
   function readFrame() {
