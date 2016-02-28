@@ -18,7 +18,7 @@ io.on('connection', function(socket){
     socket.join(room);
     console.log('join', room)
   });
-  socket.on('uploadFrame', msg => {
+  socket.on('uploadFrame', function(msg) {
     socket.broadcast.to(msg.room).emit('downloadFrame', msg);
   });
 });
