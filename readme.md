@@ -1,6 +1,17 @@
 # Cryptography hack at nwhacks 2016
 
 
+## Web Socket
+
+Using socket.io
+
+### Server-side Events
+#### `uploadFrame`
+
+### Client-side Events
+#### `downloadFrame`
+Load a new frame with `frame` data.
+
 ## Protocol
 
 Frontend:
@@ -21,6 +32,7 @@ Frontend:
   id: Number,
   width: Number,
   height: Number,
-  data: Number[]
+  data: Number[],
+  timestamp: Date,
 }
 ```

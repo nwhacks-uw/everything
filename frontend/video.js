@@ -1,6 +1,12 @@
 (function (doc, nav) {
   "use strict";
 
+  var socket = io();
+
+  socket.on('downloadFrame', function(frame) {
+    console.log(frame);
+  });
+
   var video, width, height, context;
 
   function initialize() {
