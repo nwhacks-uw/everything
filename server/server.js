@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false } ));
-app.use(express.static('static'));
+app.use(express.static('server/static'));
 
 const server = app.listen(port, () => {
   console.log('Listening on *:' + port);
@@ -14,8 +14,8 @@ const server = app.listen(port, () => {
 
 const io = require('socket.io')(server);
 io.on('connection', function(socket){
-  socket.on('data message', function(msg){
-    socket.broadcast.emit('data message', msg);
+  socket.on('uploadFrame', function(msg){
+    socket.broadcast.emit('downloadFrame', msg);
   });
 });
 
