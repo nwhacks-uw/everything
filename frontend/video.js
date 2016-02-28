@@ -44,11 +44,12 @@
     }
 
     // Send frame to server
+    console.log(id);
     socket.emit('uploadFrame', {
-      id: id,
+      id: id++,
       width: width,
       height: height,
-      data: frame.data,
+      // data: frame.data,
       timestamp: +new Date(),
     });
 
