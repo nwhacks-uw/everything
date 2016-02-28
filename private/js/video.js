@@ -12,7 +12,7 @@ var id = 0;
 var frameRate = 1;
 var messageQueue = [];
 var bitPadding = 8;
-var numLSBs = 4;
+var numLSBs = 1;
 var START_TRANSMISSION = '>>>>';
 var END_TRANSMISSION = '<<<<';
 var dontUsePng = false;
@@ -76,17 +76,17 @@ function draw() {
 
     if (hasData) {
       console.log('Sending frame with data');
+
+      var image = new Image();
+      image.onload = function() {
+        context2.clearRect(0, 0, width, height);
+        context2.drawImage(image, 0, 0);
+        var imageData = context2.getImageData(0, 0, width, height);
+        console.log('GOOD??', decrypt(imageData.data));
+      };
+      image.src = imageData;
     }
 
-    // var image = new Image();
-    // image.onload = function() {
-    //   context2.clearRect(0, 0, width, height);
-    //   context2.drawImage(image, 0, 0);
-    //   var imageData = context2.getImageData(0, 0, width, height);
-    //   console.log(decrypt(imageData.data));
-    // };
-    // image.src = imageData;
-    //
     var frame = {
       room: room,
       id: id++,
@@ -112,6 +112,7 @@ function readFrame() {
     context1.drawImage(video, 0, 0, width, height);
   } catch (e) {
     // The video may not be ready, yet.
+    console.log('FAILED')
     return null;
   }
 
