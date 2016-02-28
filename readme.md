@@ -16,7 +16,7 @@ Frontend:
   - 2: B
   - 3: A
 
-```json
+```js
 {
   id: Number,
   width: Number,
