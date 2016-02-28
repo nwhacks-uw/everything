@@ -2,9 +2,10 @@
   "use strict";
 
   var socket = io();
+  var crypto = require('./crypto');
 
   socket.on('downloadFrame', function(frame) {
-    console.log(frame);
+    // console.log(frame);
     var image = new Image();
     image.onload = function() {
         context.drawImage(image, 0, 0);
@@ -43,16 +44,14 @@
 
   function draw() {
     var frame = readFrame();
-
     if (frame) {
-      replaceGreen(frame.data);
+      // replaceGreen(frame.data);
       context.putImageData(frame, 0, 0);
     }
 
     var jpeg = getJPEG();
 
     // Send frame to server
-    console.log('emitting: ' + id);
     socket.emit('uploadFrame', {
       id: id++,
       width: width,

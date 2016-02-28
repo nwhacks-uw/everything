@@ -1,14 +1,17 @@
 var fs = require('fs');
 var crypto = require('crypto');
 
-// crypto
 var algorithm = 'aes-256-ctr',
 password = 'd6F3Efeq';
+var safe;
+var i;
 
-function encrypt(text){
+function encrypt(file){
   var cipher = crypto.createCipher(algorithm,password)
-  var crypted = cipher.update(text,'utf8','hex')
+  var crypted = cipher.update(file,'utf8','hex')
   crypted += cipher.final('hex');
+  i = 0;
+  safe = crypted;
   return crypted;
 }
  
@@ -19,15 +22,12 @@ function decrypt(text){
   return dec;
 }
 
-module.exports = function (values) {
-  var data = "hello";
-  console.log(data);
-
-  var safe = encrypt("hello");
-  console.log(safe);
-
-  var unsafe = decrypt(safe);
-  console.log(unsafe);
-
-  return [safe, unsafe];
+function getNext(length) {
+  var next = safe.substring(i, length);
+  i += length;
+  console.log('next: ' + next);
 }
+
+module.exports.getNext = getNext;
+module.exports.encrypt = encrypt;
+module.exports.decrypt = decrypt;

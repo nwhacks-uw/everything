@@ -5,11 +5,34 @@
     <title>Demo: live green screen with getUserMedia()</title>
     <link href="/css/main.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-    <script src="/js/bundle.js"></script>
+    <script src="../static/js/bundle.js"></script>
   </head>
 
   <body>
     <video id="v" width="320" height="240"></video>
     <canvas id="c" width="320" height="240"></canvas>
+
+    <input type="file" id="file-input" />
+    <h3>Contents of the file:</h3>
+    <pre id="file-content"></pre>
+
+    <script>
+      function readSingleFile(e) {
+        var file = e.target.files[0];
+        if (!file) {
+          return;
+        }
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          var contents = e.target.result;
+          ReadFile(contents);
+
+        };
+        reader.readAsText(file);
+      }
+
+      document.getElementById('file-input')
+        .addEventListener('change', readSingleFile, false);
+    </script>
   </body>
 </html>

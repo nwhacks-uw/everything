@@ -5,12 +5,13 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "watch": "mkdir -p static/js/; watchify private/js/main.js -o static/js/bundle.js",
-    "postinstall": "mkdir -p static/js/; browserify private/js/main.js > static/js/bundle.js"
+    "watch": "mkdir -p static/js/; watchify -t brfs private/js/main.js -o static/js/bundle.js",
+    "postinstall": "mkdir -p static/js/; browserify -t brfs private/js/main.js > static/js/bundle.js"
   },
   "author": "Christopher Su",
   "dependencies": {
     "body-parser": "^1.15.0",
+    "brfs": "^1.4.3",
     "browserify": "^13.0.0",
     "express": "^4.13.4",
     "socket.io": "^1.4.5"
