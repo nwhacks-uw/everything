@@ -6,7 +6,7 @@ const bodyParser = require('body-parser');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false } ));
-app.use(express.static(__dirname + 'static'));
+app.use(express.static('server/static'));
 
 const server = app.listen(port, () => {
   console.log('Listening on *:' + port);
