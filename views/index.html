@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Demo: live green screen with getUserMedia()</title>
+    <title>Live Streaming Video Cryptography</title>
     <link href="/css/main.css" rel="stylesheet" type="text/css">
     <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
     <script src="/js/bundle.js"></script>
@@ -11,5 +11,11 @@
   <body>
     <video id="v" width="320" height="240"></video>
     <canvas id="c" width="320" height="240"></canvas>
+    <form>
+        <textarea id="message"></textarea>
+        <button id="send" type="button">Send message</button>
+    </form>
+    <div id="messages">
+    </div>
   </body>
 </html>

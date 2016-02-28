@@ -3,23 +3,21 @@
 
   var socket = io();
 
-  socket.on('downloadFrame', function(frame) {
-    console.log(frame);
-    var image = new Image();
-    image.onload = function() {
-        context.drawImage(image, 0, 0);
-    };
-    image.src = frame.data;
-  });
-
   var video;
   var width;
   var height;
   var context;
   var canvas;
   var id = 0;
+  var messageQueue = [];
 
   function initialize() {
+    // On message sent
+    document.getElementById("send").onclick = function() {
+      var message = document.getElementById("message").value;
+      sendMessage(message);
+    }
+
     // The source video.
     video = doc.getElementById("v");
     width = video.width;
@@ -52,7 +50,6 @@
     var jpeg = getJPEG();
 
     // Send frame to server
-    console.log('emitting: ' + id);
     socket.emit('uploadFrame', {
       id: id++,
       width: width,
@@ -66,8 +63,8 @@
   }
 
   function getJPEG() {
-      // Returns JPEG as string
-      return canvas.toDataURL('image/jpeg');
+      // Returns JPEG as string or secret message data
+      return canvas.toDataURL('image/jpeg', 0.1);
   }
 
   function readFrame() {
@@ -133,6 +130,52 @@
     }
 
     return [h, s * 100, l * 100];
+  }
+
+  socket.on('downloadFrame', function(frame) {
+    if (isMessage(frame)) {
+      renderTextMessage(frame.data);
+    } else {
+      var image = new Image();
+      image.onload = function() {
+        context.drawImage(image, 0, 0);
+      };
+      image.src = frame.data;
+    }
+  });
+
+  function isMessage(frame) {
+    return frame.width == 0;
+  }
+
+  function renderTextMessage(message) {
+    var p = document.createElement('p');
+    var text = document.createTextNode(message);
+    p.appendChild(text);
+    document.getElementById('messages').appendChild(p);
+  }
+
+  function sendMessage(msg) {
+    console.log('send message');
+    messageQueue.push(msg);
+    // Recursively emit frames at random 30 second intervals
+    (function loop() {
+      var rand = Math.round(Math.random() * (10)) + 30;
+      setTimeout(function() {
+        if (messageQueue.length > 0) {
+          // Split into sendable sized chunk frames
+          socket.emit('uploadFrame', {
+            id: id++,
+            width: 0,
+            height: 0,
+            data: messageQueue[0],
+            timestamp: +new Date(),
+          });
+          messageQueue.shift();
+          loop(); 
+        }
+      }, rand);
+    }());
   }
 
   addEventListener("DOMContentLoaded", initialize);
