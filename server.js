@@ -14,7 +14,7 @@ var server = app.listen(port, function() {
 
 var io = require('socket.io')(server);
 io.on('connection', function(socket){
-  socket.on('room', room => {
+  socket.on('room', function(room) {
     socket.join(room);
     console.log('join', room)
   });
