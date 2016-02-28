@@ -8,7 +8,7 @@ var app = express();
 app.use(bodyParser.urlencoded({ extended: false } ));
 app.use(express.static('static'));
 
-var server = app.listen(port, () => {
+var server = app.listen(port, function() {
   console.log('Listening on *:' + port);
 });
 
@@ -23,6 +23,6 @@ io.on('connection', function(socket){
   });
 });
 
-app.get(['/:room', '/'], (req, res) => {
+app.get(['/:room', '/'], function(req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
