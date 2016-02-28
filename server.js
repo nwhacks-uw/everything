@@ -1,18 +1,18 @@
 "use strict";
-const port = process.env.PORT || 3000;
+var port = process.env.PORT || 3000;
 
-const express = require('express');
-const bodyParser = require('body-parser');
+var express = require('express');
+var bodyParser = require('body-parser');
 
-const app = express();
+var app = express();
 app.use(bodyParser.urlencoded({ extended: false } ));
 app.use(express.static('static'));
 
-const server = app.listen(port, () => {
+var server = app.listen(port, () => {
   console.log('Listening on *:' + port);
 });
 
-const io = require('socket.io')(server);
+var io = require('socket.io')(server);
 io.on('connection', function(socket){
   socket.on('room', room => {
     socket.join(room);
