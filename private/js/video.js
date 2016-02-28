@@ -190,7 +190,7 @@ function decrypt(data) {
     } else {
       endCharCount = 0;
     }
-    if (endCharCount === 4) {
+    if (endCharCount === END_TRANSMISSION.length) {
       break;
     }
   }
@@ -200,13 +200,9 @@ function decrypt(data) {
 }
 
 socket.on('downloadFrame', function(frame) {
-  console.log('downloaded frame');
-
   if (dontUsePng) {
-    // console.log(frame.data);
     var message = decrypt(frame.data);
     console.log('DECRYPTED MESSAGE:', message);
-    // context1.putImageData(frame.data, 0, 0);
     renderTextMessage(message);
   } else {
     var image = new Image();
