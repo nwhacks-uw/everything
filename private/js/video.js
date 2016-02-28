@@ -194,7 +194,11 @@ function decrypt(data) {
     }
   }
   var decryptedMessage = asciiArray.join('');
+  if (decryptedMessage[0] != '>') {
+    console.log("bad");
+  }
   decryptedMessage = decryptedMessage.substring(START_TRANSMISSION.length, decryptedMessage.length - END_TRANSMISSION.length);
+  console.log(decryptedMessage.length);
   return decryptedMessage;
 }
 
