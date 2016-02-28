@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "mkdir -p static/js/; watchify private/js/main.js -o static/js/bundle.js",
-    "postinstall": "browserify private/js/main.js > static/js/bundle.js"
+    "postinstall": "mkdir -p static/js/; browserify private/js/main.js > static/js/bundle.js"
   },
   "author": "Christopher Su",
   "dependencies": {
