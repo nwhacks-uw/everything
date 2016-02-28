@@ -7,22 +7,20 @@ socket.on('connect', function() {
 var video;
 var width;
 var height;
-var context;
-var contextOther;
-var canvas;
 var uploadedMessage = '';
 var id = 0;
-var frameRate = 2;
+var frameRate = 1;
 var messageQueue = [];
 var bitPadding = 8;
-var numLSBs = 8;
+var numLSBs = 4;
 var START_TRANSMISSION = '>>>>';
 var END_TRANSMISSION = '<<<<';
+var dontUsePng = false;
 
 // On message sent
 document.getElementById("send").onclick = function() {
   var message = document.getElementById("message").value;
-  sendMessage(message);
+  setMessage(message);
 };
 
 // The source video.
@@ -31,9 +29,10 @@ width = video.width;
 height = video.height;
 
 // The target canvas.
-canvas = document.getElementById("cme");
-context = canvas.getContext("2d");
-contextOther = document.getElementById('cother').getContext('2d');
+var canvas1 = document.getElementById("cme");
+var canvas2 = document.getElementById('cother');
+var context1 = canvas1.getContext("2d");
+var context2 = canvas2.getContext('2d');
 
 // Get the webcam's stream.
 navigator.getUserMedia({video: true}, startStream, function () {});
@@ -49,31 +48,54 @@ function startStream(stream) {
 var lastTime = +new Date();
 function draw() {
   var frame = readFrame();
+  var hasData = false;
   if (frame) {
     var message = '';
     if (uploadedMessage) {
       message = uploadedMessage;
+      hasData = true;
       uploadedMessage = '';
     }
     encryptData(frame.data, message);
-    context.putImageData(frame, 0, 0);
+    context1.putImageData(frame, 0, 0);
   }
 
-  var imageData = getImageData();
+  function toArray(arr) {
+    var a = [];
+    for (var i = 0; i < arr.length; ++i) {
+      a[i] = arr[i];
+    }
+    return a;
+  }
+  var imageData = dontUsePng ? toArray(frame.data) : getImageData();
 
   // Send frame to server
   var thisTime = +new Date();
-  if (thisTime - lastTime > 1000/frameRate) {
-
+  if (hasData || thisTime - lastTime > 1000/frameRate) {
     lastTime = thisTime;
-    socket.emit('uploadFrame', {
+
+    if (hasData) {
+      console.log('Sending frame with data');
+    }
+
+    // var image = new Image();
+    // image.onload = function() {
+    //   context2.clearRect(0, 0, width, height);
+    //   context2.drawImage(image, 0, 0);
+    //   var imageData = context2.getImageData(0, 0, width, height);
+    //   console.log(decrypt(imageData.data));
+    // };
+    // image.src = imageData;
+    //
+    var frame = {
       room: room,
       id: id++,
       width: width,
       height: height,
       data: imageData,
       timestamp: +new Date(),
-    });
+    };
+    socket.emit('uploadFrame', frame);
   }
 
   // Wait for the next frame.
@@ -81,26 +103,30 @@ function draw() {
 }
 
 function getImageData() {
-    // Returns imageData as string
-    return canvas.toDataURL('image/png');
+  // Returns imageData as string
+  return canvas1.toDataURL('image/png', 1);
 }
 
 function readFrame() {
   try {
-    context.drawImage(video, 0, 0, width, height);
+    context1.drawImage(video, 0, 0, width, height);
   } catch (e) {
     // The video may not be ready, yet.
     return null;
   }
 
-  return context.getImageData(0, 0, width, height);
+  return context1.getImageData(0, 0, width, height);
 }
 
 // data - The frame data
 // message - The message you want to encrypt
 function encryptData(data, message) {
   var len = data.length;
-  var message = message || '';
+  message = message || '';
+
+  if (message) {
+    console.log('encrypted message in data of length:', message.length);
+  }
 
   var bitsInMessage = message.length * bitPadding;
   var maximumMessageLength = len * numLSBs;
@@ -173,13 +199,26 @@ function decrypt(data) {
 }
 
 socket.on('downloadFrame', function(frame) {
-  var image = new Image();
-  image.onload = function() {
-    contextOther.drawImage(image, 0, 0);
-  };
-  image.src = frame.data;
-  var message = decrypt(frame.data);
-  renderTextMessage(message);
+  console.log('downloaded frame');
+
+  if (dontUsePng) {
+    // console.log(frame.data);
+    var message = decrypt(frame.data);
+    console.log('DECRYPTED MESSAGE:', message);
+    // context1.putImageData(frame.data, 0, 0);
+    renderTextMessage(message);
+  } else {
+    var image = new Image();
+    image.onload = function() {
+      context2.clearRect(0, 0, width, height);
+      context2.drawImage(image, 0, 0);
+      var imageData = context2.getImageData(0, 0, width, height);
+      var message = decrypt(imageData.data);
+      console.log('DECRYPTED MESSAGE:', message);
+      renderTextMessage(message);
+    };
+    image.src = frame.data;
+  }
 });
 
 function renderTextMessage(message) {
@@ -189,30 +228,11 @@ function renderTextMessage(message) {
   document.getElementById('messages').appendChild(p);
 }
 
-function sendMessage(msg) {
-  messageQueue.push(msg);
-  // Recursively emit frames at random 30 second intervals
-  (function loop() {
-    var rand = Math.round(Math.random() * (10)) + 30;
-    setTimeout(function() {
-      if (messageQueue.length > 0) {
-        // Split into sendable sized chunk frames
-        socket.emit('uploadFrame', {
-          id: id++,
-          width: 0,
-          height: 0,
-          data: messageQueue[0],
-          timestamp: +new Date(),
-        });
-        messageQueue.shift();
-        loop();
-      }
-    }, rand);
-  }());
+function setMessage(message) {
+  console.log('Set message with length:', message.length);
+  uploadedMessage = message;
 }
 
 module.exports = {
-  setMessage: function(message) {
-    uploadedMessage = message;
-  }
+  setMessage: setMessage
 };
