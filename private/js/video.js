@@ -9,6 +9,7 @@
   var context;
   var canvas;
   var id = 0;
+  var frameRate = 2;
   var messageQueue = [];
 
   function initialize() {
@@ -45,7 +46,7 @@
     var frame = readFrame();
 
     if (frame) {
-      replaceGreen(frame.data);
+      changeData(frame.data);
       context.putImageData(frame, 0, 0);
     }
 
@@ -53,7 +54,8 @@
 
     // Send frame to server
     var thisTime = +new Date();
-    if (thisTime - lastTime > 1000/20) {
+    if (thisTime - lastTime > 1000/frameRate) {
+
       lastTime = thisTime;
       socket.emit('uploadFrame', {
         id: id++,
@@ -84,62 +86,86 @@
     return context.getImageData(0, 0, width, height);
   }
 
-  function replaceGreen(data) {
+  function changeData(data, message) {
     var len = data.length;
+    var message = message || '';
 
-    for (var i = 0, j = 0; j < len; i++, j += 4) {
-      // Convert from RGB to HSL...
-      var hsl = rgb2hsl(data[j], data[j + 1], data[j + 2]);
-      var h = hsl[0], s = hsl[1], l = hsl[2];
 
-      // ... and check if we have a somewhat green pixel.
-      // if (h >= 90 && h <= 160 && s >= 25 && s <= 90 && l >= 20 && l <= 75) {
-      if (Math.random() > 0.9) {
-        // data[j + 3] = 0;
-        data[j] = (data[j] & (255 - 128)) + (Math.random() > 0.5 ? 128 : 0);
-        data[j+1] = (data[j+1] & (255 - 128)) + (Math.random() > 0.5 ? 128 : 0);
-        data[j+2] = (data[j+2] & (255 - 128)) + (Math.random() > 0.5 ? 128 : 0);
+    var bitPadding = 8;
+    var numLSBs = 8;
+
+    for (var i = 0; i < 20000; ++i) {
+      message += String.fromCharCode(Math.floor(Math.random() * 255));
+    }
+
+    var bitsInMessage = message.length * bitPadding;
+    var maximumMessageLength = len * numLSBs;
+    if (bitsInMessage > maximumMessageLength) {
+      console.log('length is greater than allowed! ' + bitsInMessage + '/' + maximumMessageLength);
+    }
+
+
+    // ENCRYPT!!!
+    var encryptedMessage = ">>>>" + message + "<<<<";
+    var asciiArray = [];
+    for (var i = 0; i < encryptedMessage.length; ++i) {
+      asciiArray[i] = encryptedMessage.charCodeAt(i);
+    }
+    var bitArray = [];
+    for (var i = 0; i < asciiArray.length; ++i) {
+      var bitString = (asciiArray[i]).toString(2);
+      var bitStringLen = bitString.length;
+      for (var j = 0; j < bitPadding - bitStringLen; ++j) {
+        bitString = "0" + bitString;
       }
-      // }
+      for (var j = 0; j < bitPadding; ++j) {
+        bitArray.push(+bitString.charAt(j));
+      }
     }
+
+    // Add bits to LSB
+    var mask = ~((1<<numLSBs)-1);
+    for (var i = 0; i < bitArray.length / numLSBs; ++i) {
+      var lsbs = 0;
+      for (var j = 0; j < numLSBs; ++j) {
+        lsbs += (bitArray[i*numLSBs + j] << (numLSBs - j - 1));
+      }
+      data[i] = (data[i] & mask) | lsbs;
+    }
+
+
+    // DECRYPT!!!
+
+    var bitArray = [];
+    for (var i = 0; i < data.length/numLSBs; ++i) {
+      var mask = ~(-1 << numLSBs);
+      var bit = data[i] & mask;
+      for (var j = numLSBs - 1; j >= 0; --j) {
+        var otherMask = 1 << j;
+        bitArray.push((bit & otherMask) >> j);
+      }
+    }
+
+    var asciiArray = [];
+    var endCharCount = 0;
+    for (var i = 0; i < data.length / bitPadding; ++i) {
+      var ascii = "";
+      for (var j = 0; j < bitPadding; ++j) {
+        ascii += bitArray[i * bitPadding + j];
+      }
+      asciiArray[i] = String.fromCharCode(parseInt(ascii, 2));
+      if (asciiArray[i] === '<') {
+        endCharCount++;
+      } else {
+        endCharCount = 0;
+      }
+      if (endCharCount === 4) {
+        break;
+      }
+    }
+    var descriptedMessage = asciiArray.join('');
   }
 
-  function rgb2hsl(r, g, b) {
-    r /= 255; g /= 255; b /= 255;
-
-    var min = Math.min(r, g, b);
-    var max = Math.max(r, g, b);
-    var delta = max - min;
-    var h, s, l;
-
-    if (max == min) {
-      h = 0;
-    } else if (r == max) {
-      h = (g - b) / delta;
-    } else if (g == max) {
-      h = 2 + (b - r) / delta;
-    } else if (b == max) {
-      h = 4 + (r - g) / delta;
-    }
-
-    h = Math.min(h * 60, 360);
-
-    if (h < 0) {
-      h += 360;
-    }
-
-    l = (min + max) / 2;
-
-    if (max == min) {
-      s = 0;
-    } else if (l <= 0.5) {
-      s = delta / (max + min);
-    } else {
-      s = delta / (2 - max - min);
-    }
-
-    return [h, s * 100, l * 100];
-  }
 
   socket.on('downloadFrame', function(frame) {
     if (isMessage(frame)) {
