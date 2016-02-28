@@ -3,7 +3,6 @@
 
   var room = location.pathname;
   var socket = io();
-  var crypto = require('./crypto');
   socket.on('connect', function() {
     socket.emit('room', room);
   });
