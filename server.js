@@ -14,11 +14,15 @@ const server = app.listen(port, () => {
 
 const io = require('socket.io')(server);
 io.on('connection', function(socket){
-  socket.on('uploadFrame', function(msg){
-    socket.broadcast.emit('downloadFrame', msg);
+  socket.on('room', room => {
+    socket.join(room);
+    console.log('join', room)
+  });
+  socket.on('uploadFrame', msg => {
+    socket.broadcast.to(msg.room).emit('downloadFrame', msg);
   });
 });
 
-app.get('/', (req, res) => {
+app.get('/:room', (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
 });

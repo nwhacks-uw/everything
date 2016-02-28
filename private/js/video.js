@@ -1,7 +1,11 @@
 (function (doc, nav) {
   "use strict";
 
+  var room = location.pathname;
   var socket = io();
+  socket.on('connect', function() {
+    socket.emit('room', room);
+  });
 
   var video;
   var width;
@@ -56,6 +60,7 @@
     if (thisTime - lastTime > 1000/20) {
       lastTime = thisTime;
       socket.emit('uploadFrame', {
+        room: room,
         id: id++,
         width: width,
         height: height,
