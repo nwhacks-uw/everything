@@ -7,15 +7,12 @@ socket.on('connect', function() {
 var video;
 var width;
 var height;
-var context;
-var contextOther;
-var canvas;
 var uploadedMessage = '';
 var id = 0;
 var frameRate = 2;
 var messageQueue = [];
 var bitPadding = 8;
-var numLSBs = 8;
+var numLSBs = 2;
 var START_TRANSMISSION = '>>>>';
 var END_TRANSMISSION = '<<<<';
 
@@ -31,9 +28,10 @@ width = video.width;
 height = video.height;
 
 // The target canvas.
-canvas = document.getElementById("cme");
-context = canvas.getContext("2d");
-contextOther = document.getElementById('cother').getContext('2d');
+var canvas1 = document.getElementById("cme");
+var canvas2 = document.getElementById('cother');
+var context1 = canvas1.getContext("2d");
+var context2 = canvas2.getContext('2d');
 
 // Get the webcam's stream.
 navigator.getUserMedia({video: true}, startStream, function () {});
@@ -58,7 +56,7 @@ function draw() {
       uploadedMessage = '';
     }
     encryptData(frame.data, message);
-    context.putImageData(frame, 0, 0);
+    context1.putImageData(frame, 0, 0);
   }
 
   var imageData = getImageData();
@@ -86,19 +84,19 @@ function draw() {
 }
 
 function getImageData() {
-    // Returns imageData as string
-    return canvas.toDataURL('image/png');
+  // Returns imageData as string
+  return canvas1.toDataURL('image/png');
 }
 
 function readFrame() {
   try {
-    context.drawImage(video, 0, 0, width, height);
+    context1.drawImage(video, 0, 0, width, height);
   } catch (e) {
     // The video may not be ready, yet.
     return null;
   }
 
-  return context.getImageData(0, 0, width, height);
+  return context1.getImageData(0, 0, width, height);
 }
 
 // data - The frame data
@@ -185,10 +183,11 @@ socket.on('downloadFrame', function(frame) {
   console.log('downloaded frame');
   var image = new Image();
   image.onload = function() {
-    contextOther.drawImage(image, 0, 0);
+    context2.drawImage(image, 0, 0);
   };
   image.src = frame.data;
   var message = decrypt(frame.data);
+  console.log('DECRYPTED MESSAGE:');
   renderTextMessage(message);
 });
 
