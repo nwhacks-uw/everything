@@ -1,8 +1,19 @@
-require('./shim');
-var video = require('./video');
+window.onload = function() {
+  var shim = require('./shim');
+  var video = require('./video');
 
-// open file indicated by user, and encrypt
-window.ReadFile = function(data){
-  console.log('encoding');
-  // TODO- pass into video
+  function readSingleFile(e) {
+    var file = e.target.files[0];
+    if (!file) {
+      return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var contents = e.target.result;
+      video.setMessage(contents);
+    };
+    reader.readAsText(file);
+  }
+
+  document.getElementById('file-input').addEventListener('change', readSingleFile, false);
 };
