@@ -39,6 +39,8 @@
     requestAnimationFrame(draw);
   }
 
+
+  var lastTime = +new Date();
   function draw() {
     var frame = readFrame();
 
@@ -50,13 +52,17 @@
     var imageData = getImageData();
 
     // Send frame to server
-    socket.emit('uploadFrame', {
-      id: id++,
-      width: width,
-      height: height,
-      data: imageData,
-      timestamp: +new Date(),
-    });
+    var thisTime = +new Date();
+    if (thisTime - lastTime > 1000/20) {
+      lastTime = thisTime;
+      socket.emit('uploadFrame', {
+        id: id++,
+        width: width,
+        height: height,
+        data: imageData,
+        timestamp: +new Date(),
+      });
+    }
 
     // Wait for the next frame.
     requestAnimationFrame(draw);
