@@ -23,6 +23,6 @@ io.on('connection', function(socket){
   });
 });
 
-app.get(['/<:room>', '/'], (req, res) => {
+app.get(['/:room', '/'], (req, res) => {
   res.sendFile(__dirname + '/views/index.html');
 });
