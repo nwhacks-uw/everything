@@ -22,7 +22,7 @@ var END_TRANSMISSION = '<<<<';
 // On message sent
 document.getElementById("send").onclick = function() {
   var message = document.getElementById("message").value;
-  sendMessage(message);
+  setMessage(message);
 };
 
 // The source video.
@@ -49,10 +49,12 @@ function startStream(stream) {
 var lastTime = +new Date();
 function draw() {
   var frame = readFrame();
+  var hasData = false;
   if (frame) {
     var message = '';
     if (uploadedMessage) {
       message = uploadedMessage;
+      hasData = true;
       uploadedMessage = '';
     }
     encryptData(frame.data, message);
@@ -63,9 +65,12 @@ function draw() {
 
   // Send frame to server
   var thisTime = +new Date();
-  if (thisTime - lastTime > 1000/frameRate) {
-
+  if (hasData || thisTime - lastTime > 1000/frameRate) {
     lastTime = thisTime;
+
+    if (hasData) {
+      console.log('Sending frame with data');
+    }
     socket.emit('uploadFrame', {
       room: room,
       id: id++,
@@ -100,7 +105,11 @@ function readFrame() {
 // message - The message you want to encrypt
 function encryptData(data, message) {
   var len = data.length;
-  var message = message || '';
+  message = message || '';
+
+  if (message) {
+    console.log('encrypted message in data of length:', message.length);
+  }
 
   var bitsInMessage = message.length * bitPadding;
   var maximumMessageLength = len * numLSBs;
@@ -173,6 +182,7 @@ function decrypt(data) {
 }
 
 socket.on('downloadFrame', function(frame) {
+  console.log('downloaded frame');
   var image = new Image();
   image.onload = function() {
     contextOther.drawImage(image, 0, 0);
@@ -189,30 +199,11 @@ function renderTextMessage(message) {
   document.getElementById('messages').appendChild(p);
 }
 
-function sendMessage(msg) {
-  messageQueue.push(msg);
-  // Recursively emit frames at random 30 second intervals
-  (function loop() {
-    var rand = Math.round(Math.random() * (10)) + 30;
-    setTimeout(function() {
-      if (messageQueue.length > 0) {
-        // Split into sendable sized chunk frames
-        socket.emit('uploadFrame', {
-          id: id++,
-          width: 0,
-          height: 0,
-          data: messageQueue[0],
-          timestamp: +new Date(),
-        });
-        messageQueue.shift();
-        loop();
-      }
-    }, rand);
-  }());
+function setMessage(message) {
+  console.log('Set message with length:', message.length);
+  uploadedMessage = message;
 }
 
 module.exports = {
-  setMessage: function(message) {
-    uploadedMessage = message;
-  }
+  setMessage: setMessage
 };
