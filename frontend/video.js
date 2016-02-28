@@ -1,7 +1,7 @@
 (function (doc, nav) {
   "use strict";
 
-  var socket = io();
+  var socket = io('http://nwhacks.dev.christopher.su/');
 
   socket.on('downloadFrame', function(frame) {
     console.log(frame);
@@ -44,7 +44,7 @@
     }
 
     // Send frame to server
-    console.log(id);
+    console.log('emitting: ' + id);
     socket.emit('uploadFrame', {
       id: id++,
       width: width,
