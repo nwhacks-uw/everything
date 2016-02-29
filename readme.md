@@ -1,7 +1,12 @@
-# Cryptography hack at nwhacks 2016
+# Cryptography hack at NWHacks Spring 2016
 
-http://nwhacks.dev.christopher.su/
-https://nwhacks.herokuapp.com/
+Won 3rd place of PIA's Best Privacy, Security or Crypto Hack, and won Major League Hacking's best use of AWS.
+
+## Relevant Sites
+
++ [Most reliable](https://eyrie.christopher.su/) and [alternate](http://nwhacks.dev.christopher.su/).
++ [Heroku](https://nwhacks.herokuapp.com/)
++ [Devpost](http://devpost.com/software/james-bond-s-webcam)
 
 ## Web Socket
 
